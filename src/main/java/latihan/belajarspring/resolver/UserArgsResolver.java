@@ -30,13 +30,17 @@ public class UserArgsResolver implements HandlerMethodArgumentResolver {
     public User resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         HttpServletRequest servletRequest = (HttpServletRequest) webRequest.getNativeRequest();
         String token = servletRequest.getHeader("X-API-TOKEN");
-        System.out.println(token);
 
         if(token == null){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Unauthorized");
         }
 
         User user = userRepository.findByToken(token).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Unauthorized"));
+
+
+        if(user.getTokenExpiredAt() < System.currentTimeMillis()){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Unauthorized");
+        }
 
         return user;
     }

@@ -58,9 +58,15 @@ public class UserController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public WebResponse<String> logout(User user){
+        System.out.println("awal awal");
+        System.out.println(user);
+
         userService.logout(user);
         WebResponse<String> response = new WebResponse<>();
         response.setData("User Logout success");
+
+        System.out.println("akhir");
+        System.out.println(user);
         return response;
     }
 
