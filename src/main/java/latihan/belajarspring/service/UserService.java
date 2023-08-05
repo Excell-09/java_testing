@@ -7,6 +7,7 @@ import latihan.belajarspring.entity.User;
 import latihan.belajarspring.model.*;
 import latihan.belajarspring.repository.UserRepository;
 import latihan.belajarspring.security.BCrypt;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class UserService {
 
     @Autowired
@@ -86,5 +88,23 @@ public class UserService {
         userResponse.setName(user.getName());
         userResponse.setUsername(user.getUsername());
         return userResponse;
+    }
+
+    @Transactional
+    public void updateUser(User user, UpdateUserRequest request){
+        Set<ConstraintViolation<UpdateUserRequest>> constraintViolations = validator.validate(request);
+
+        if(!constraintViolations.isEmpty()){
+            throw new ConstraintViolationException(constraintViolations);
+        }
+
+        if(!BCrypt.checkpw(request.getPassword(),user.getPassword())){
+            user.setPassword(BCrypt.hashpw(request.getPassword(),BCrypt.gensalt()));
+        }
+
+        user.setName(request.getName());
+
+        userRepository.save(user);
+
     }
 }
