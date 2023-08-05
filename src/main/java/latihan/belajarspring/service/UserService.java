@@ -7,6 +7,7 @@ import latihan.belajarspring.entity.User;
 import latihan.belajarspring.model.*;
 import latihan.belajarspring.repository.UserRepository;
 import latihan.belajarspring.security.BCrypt;
+import latihan.belajarspring.utils.RequestValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,16 +27,12 @@ public class UserService {
     private UserRepository  userRepository;
 
     @Autowired
-    private Validator validator;
+    private RequestValidator requestValidator;
 
 
     @Transactional
     public void register(RegisterUserRequest request){
-        Set<ConstraintViolation<RegisterUserRequest>> constraintViolations = validator.validate(request);
-
-        if(!constraintViolations.isEmpty()){
-            throw new ConstraintViolationException(constraintViolations);
-        }
+        requestValidator.<RegisterUserRequest>validate(request);
 
         if(userRepository.existsById(request.getUsername())){
             throw  new ResponseStatusException(HttpStatus.BAD_REQUEST,"user already exits");
@@ -52,15 +49,10 @@ public class UserService {
 
     @Transactional
     public User login(LoginUserRequest request){
-        Set<ConstraintViolation<LoginUserRequest>> constraintViolations = validator.validate(request);
-
-        if(!constraintViolations.isEmpty()){
-            throw new ConstraintViolationException(constraintViolations);
-        }
+        requestValidator.<LoginUserRequest>validate(request);
 
         User user = userRepository.findById(request.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"username not found!"));
-
 
         if(!BCrypt.checkpw(request.getPassword(),user.getPassword())){
             throw  new ResponseStatusException(HttpStatus.BAD_REQUEST,"password wrong!");
@@ -92,11 +84,7 @@ public class UserService {
 
     @Transactional
     public void updateUser(User user, UpdateUserRequest request){
-        Set<ConstraintViolation<UpdateUserRequest>> constraintViolations = validator.validate(request);
-
-        if(!constraintViolations.isEmpty()){
-            throw new ConstraintViolationException(constraintViolations);
-        }
+        requestValidator.<UpdateUserRequest>validate(request);
 
         if(!BCrypt.checkpw(request.getPassword(),user.getPassword())){
             user.setPassword(BCrypt.hashpw(request.getPassword(),BCrypt.gensalt()));
