@@ -1,6 +1,5 @@
 package latihan.belajarspring.model;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class WebResponse <T> {
+public class UserResponse {
 
-    private T data;
-    private String errors;
+    private String username;
+
+    private String name;
 }

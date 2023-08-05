@@ -4,10 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import latihan.belajarspring.entity.User;
-import latihan.belajarspring.model.GetUserRequest;
-import latihan.belajarspring.model.LoginUserRequest;
-import latihan.belajarspring.model.LogoutUserRequest;
-import latihan.belajarspring.model.RegisterUserRequest;
+import latihan.belajarspring.model.*;
 import latihan.belajarspring.repository.UserRepository;
 import latihan.belajarspring.security.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,20 +73,7 @@ public class UserService {
     }
 
     @Transactional
-    public void logout(LogoutUserRequest request){
-        Set<ConstraintViolation<LogoutUserRequest>> constraintViolations = validator.validate(request);
-
-        if(!constraintViolations.isEmpty()){
-            throw new ConstraintViolationException(constraintViolations);
-        }
-
-        User user = userRepository.findById(request.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"username not found!"));
-
-        if(user.getToken() == null){
-            throw  new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid Token");
-        }
-
+    public void logout(User user){
         user.setToken(null);
         user.setTokenExpiredAt(null);
 
@@ -97,34 +81,10 @@ public class UserService {
     }
 
     @Transactional
-    public User getUser(GetUserRequest request){
-        Set<ConstraintViolation<GetUserRequest>> constraintViolations = validator.validate(request);
-
-        if(!constraintViolations.isEmpty()){
-            throw new ConstraintViolationException(constraintViolations);
-        }
-
-        User user = userRepository.findById(request.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"username not found!"));
-
-        if(user.getToken() == null){
-            throw  new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid Token");
-        }
-
-        if(!user.getToken().equals(request.getToken())){
-            throw  new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid Token");
-        }
-
-        if(user.getTokenExpiredAt() == 0){
-            user.setToken(null);
-            user.setTokenExpiredAt(null);
-            throw  new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Token Expired");
-        }
-
-        user.setToken(UUID.randomUUID().toString());
-
-        userRepository.save(user);
-
-        return  user;
+    public UserResponse get(User user){
+        UserResponse userResponse = new UserResponse(user.getUsername(),user.getName());
+        userResponse.setName(user.getName());
+        userResponse.setUsername(user.getUsername());
+        return userResponse;
     }
 }
